@@ -86,22 +86,48 @@ pyscript.write('test-plot',fig1)
 </py-script>
 </div>
 <br>
-<h2 style="border:5px; border-radius: 10px; padding:10px;background-color:gray; color:cyan">Pandas</h2>
+<h2 style="border:5px; border-radius: 10px; padding:10px;background-color:gray; color:cyan">Pandas - random dataframe</h2>
 Let's generate a Pandas DataFrame with some random nunbers (drawn from the ubiquitous Gaussian Normal distribution).
+<div class="alert alert-info" role="alert">
+	<img src="info-circle.svg" width="25px">
+The pretty formatting of the table is done, of course, using CSS. Check the <code>style</code> section. The Pandas <code>pd.to_html()</code>
+function has a <code>classes</code> argument that accepts a CSS class or a list of classes. We utilize that formatting this table.</div>
 <div><button id="pd_table" style="margin-top: 10px;margin-bottom: 10px;" type="button" class="btn btn-primary" pys-onClick="show_table">
 	Generate a Pandas DataFrame</div>
 <br>
 <div id="pandas-output"></div>
 <br>
-Interested in the statistics of this dataset?
+<h4>Interested in the statistics of this dataset?</h4>
+<div class="alert alert-info" role="alert">
+	<img src="info-circle.svg" width="25px">
+This code is non-trivial as the randomized generation of the DataFrame with the button above makes it imperative that we read the exact content shown above.
+So, we use the <code>document.getElementbyId()</code> function to accomplish this and read back that HTML into Pandas using the <code>pd.read_html()</code> function.
+  </div>
 <div><button id="table_stats" style="margin-top: 10px;margin-bottom: 10px;" type="button" class="btn btn-primary" pys-onClick="show_stats">
 	Show DataFrame stats</div>
 <br>
 <div id="pandas-ops"></div>
 <br>
+<h2 style="border:5px; border-radius: 10px; padding:10px;background-color:gray; color:cyan">Download file and analyze</h2>
+Now, we will download a CSV file from an externally hosted URL (a GitHub repo) and show its contents and statistics.
+<div style="margin-top: 10px;margin-bottom: 10px;">
+	<input type="url" id="file-url" style="width: 50%" 
+	placeholder="https://raw.githubusercontent.com/tirthajyoti/Machine-Learning-with-Python/master/Datasets/Mall_Customers.csv">
+	<div><button id="download-analyze" style="margin-top: 10px;margin-bottom: 10px;" type="button" class="btn btn-primary" 
+		pys-onClick="download_analyze">
+		Download and analyze</div>
+</div>
+<br>
+<h4>First 5 records of the downloaded file</h4>
+<div id="url-file-head"></div>
+<br>
+<h4>Statistics of the downloaded file</h4>
+<div id="url-file-ops"></div>
+<br>
 <py-script>
 import pandas as pd, numpy as np
 from js import document
+from pyodide.http import open_url
 
 def random_table(n_cols=5,n_rows=20,*ags, **kws):
 	cols = ['Col-'+str(i) for i in range(1,n_cols+1)]
@@ -122,7 +148,15 @@ def show_stats(*ags, **kws):
 	df = pd.read_html(html_data,flavor='lxml')[0]
 	stats_df = df.describe()
 	out.write(stats_df.to_html(classes='pd-table'))
-	#out.write(stats_df.)
+
+def download_analyze(*ags, **kws):
+	url=document.getElementById('file-url').value
+	try:
+		df = pd.read_csv(open_url(url))
+		pyscript.write('url-file-head',df.head(5).to_html(classes='pd-table'))
+		pyscript.write('url-file-ops',df.describe().to_html(classes='pd-table'))
+	except:
+		pyscript.write('url-file-head',"Could not access the file")
 </py-script>
 </div>
 </body>
